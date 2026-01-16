@@ -86,7 +86,7 @@ if (!empty($_GET) || !empty($_POST)) {
 <body>
     <div class="container">
         <header>
-            <h1>🎯 <span class="blink">LIVE</span> XSS LISTENER</h1>
+            <h1>🎯 <span class="blink">LIVE</span> sensetive-listener</h1>
             <p class="subtitle">Endpoint: <?php echo 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?></p>
         </header>
         
